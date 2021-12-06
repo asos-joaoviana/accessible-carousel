@@ -1,4 +1,4 @@
-import { useEffect, useLayoutEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { SlideDirection } from "./carousel.interface";
 
 export const Carousel = () => {
@@ -35,34 +35,18 @@ export const Carousel = () => {
 
   const [activeSlideIndex, setActiveSlideIndex] = useState(0);
 
-  const [hasChanged, setHasChanged] = useState(false);
-
   useEffect(() => {
     setTranslateXPercentage(activeSlideIndex * -100);
   }, [activeSlideIndex]);
 
-  useLayoutEffect(() => {
-    if (hasChanged) {
-      setTimeout(
-        () => document.getElementById("carousel-item-active")?.focus(),
-        100
-      );
-    }
-  }, [hasChanged, activeSlideIndex]);
-
   const slide = (
     slideDirection: SlideDirection.Previous | SlideDirection.Next
-  ) => {
-    setHasChanged(true);
+  ) =>
     setActiveSlideIndex(
       activeSlideIndex + (slideDirection === SlideDirection.Next ? 1 : -1)
     );
-  };
 
-  const slideToSlide = (idx: number) => {
-    setHasChanged(true);
-    setActiveSlideIndex(idx);
-  };
+  const slideToSlide = (idx: number) => setActiveSlideIndex(idx);
 
   return (
     <section
@@ -82,11 +66,11 @@ export const Carousel = () => {
         </button>
         <div style={{ width: "100%", overflow: "hidden" }}>
           <ul
-           role="group"
+            role="group"
             aria-atomic="false"
             aria-live="polite"
             ref={carouselRef}
-            aria-label="mylabel"
+            aria-label="slides"
             style={{
               display: "flex",
               margin: "0px",
@@ -115,7 +99,7 @@ export const Carousel = () => {
                 aria-current={activeSlideIndex === idx}
               >
                 <div style={{ width: "90%" }}>
-                  <h3 style={{ marginTop: "0px" }} >{title}</h3>
+                  <h3 style={{ marginTop: "0px" }}>{title}</h3>
                   <p>{text}</p>
                   <img src={img} alt={alt} style={{ width: "100%" }} />
                 </div>
@@ -151,7 +135,7 @@ export const Carousel = () => {
             key={idx}
             type="button"
             role="tab"
-            aria-label={`Slide ${idx +1}`}
+            aria-label={`Slide ${idx + 1}`}
             onClick={() => slideToSlide(idx)}
             style={{
               background: "none",
@@ -169,7 +153,7 @@ export const Carousel = () => {
       </div>
 
       <div aria-live="polite" aria-atomic="true" className="visuallyhidden">
-        <span>{`Item ${activeSlideIndex + 1} of ${slides.length}`}</span>
+        <span>{`Item ${activeSlideIndex + 1} of ${slides.length}: Slide with title: ${slides[activeSlideIndex].title}`}</span>
       </div>
     </section>
   );
