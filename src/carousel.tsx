@@ -48,6 +48,44 @@ export const Carousel = () => {
 
   const slideToSlide = (idx: number) => setActiveSlideIndex(idx);
 
+  const tabListRef = useRef<(HTMLButtonElement | null)[]>([]);
+
+  useEffect(() => {
+    tabListRef.current.find((ref) => {
+      if (ref?.id === "active-tab") {
+        ref.addEventListener("keydown", (e) => {
+          // Prevents the keydown event from reaching any registered event listeners after the current one finishes running
+          e.stopImmediatePropagation();
+          switch (e.key) {
+            case "ArrowLeft":
+              if (activeSlideIndex > 0) {
+                setActiveSlideIndex((activeSlideIndex) => activeSlideIndex - 1);
+                ref.id = "inactive-tab";
+                const tabToBeFocussed =
+                  tabListRef.current[tabListRef.current.indexOf(ref) - 1];
+
+                tabToBeFocussed?.focus();
+              }
+              break;
+            case "ArrowRight":
+              if (activeSlideIndex < slides.length - 1) {
+                setActiveSlideIndex((activeSlideIndex) => activeSlideIndex + 1);
+                ref.id = "inactive-tab";
+                const tabToBeFocussed =
+                  tabListRef.current[tabListRef.current.indexOf(ref) + 1];
+
+                tabToBeFocussed?.focus();
+              }
+              break;
+            default:
+              break;
+          }
+        });
+      }
+    });
+    // TODO: add event registration cleanup function
+  }, [activeSlideIndex]);
+
   return (
     <section
       aria-roledescription="carousel"
@@ -55,6 +93,42 @@ export const Carousel = () => {
       style={{ width: "70vw", margin: "auto" }}
     >
       <h1 id="my-title">Photo slideshow</h1>
+      <div
+        role="tablist"
+        aria-label="Slides"
+        style={{
+          marginTop: "10px",
+          display: "flex",
+          gap: "5px",
+          justifyContent: "center",
+          marginLeft: "10px",
+          marginRight: "10px",
+        }}
+      >
+        {slides.map(({ title }, idx) => (
+          <button
+            ref={(ref) => (tabListRef.current[idx] = ref)}
+            tabIndex={activeSlideIndex === idx ? 0 : -1}
+            id={idx === activeSlideIndex ? "active-tab" : "inactive-tab"}
+            key={idx}
+            type="button"
+            role="tab"
+            aria-label={`Slide ${idx + 1}`}
+            onClick={() => slideToSlide(idx)}
+            style={{
+              background: "none",
+              borderRadius: "50%",
+              width: "20px",
+              height: "20px",
+              padding: "0px",
+              cursor: "pointer",
+              backgroundColor: activeSlideIndex === idx ? "lightblue" : "white",
+            }}
+          >
+            <span className="visuallyhidden">{title}</span>
+          </button>
+        ))}
+      </div>
       <div style={{ display: "flex" }}>
         <button
           onClick={() => slide(SlideDirection.Previous)}
@@ -118,42 +192,10 @@ export const Carousel = () => {
         </button>
       </div>
 
-      <div
-        role="tablist"
-        aria-label="Slides"
-        style={{
-          marginTop: "10px",
-          display: "flex",
-          gap: "5px",
-          justifyContent: "center",
-          marginLeft: "10px",
-          marginRight: "10px",
-        }}
-      >
-        {slides.map(({ title }, idx) => (
-          <button
-            key={idx}
-            type="button"
-            role="tab"
-            aria-label={`Slide ${idx + 1}`}
-            onClick={() => slideToSlide(idx)}
-            style={{
-              background: "none",
-              borderRadius: "50%",
-              width: "10px",
-              height: "10px",
-              padding: "0px",
-              cursor: "pointer",
-              backgroundColor: activeSlideIndex === idx ? "lightblue" : "white",
-            }}
-          >
-            <span className="visuallyhidden">{title}</span>
-          </button>
-        ))}
-      </div>
-
       <div aria-live="polite" aria-atomic="true" className="visuallyhidden">
-        <span>{`Item ${activeSlideIndex + 1} of ${slides.length}: Slide with title: ${slides[activeSlideIndex].title}`}</span>
+        <span>{`Item ${activeSlideIndex + 1} of ${
+          slides.length
+        }: Slide with title: ${slides[activeSlideIndex].title}`}</span>
       </div>
     </section>
   );
